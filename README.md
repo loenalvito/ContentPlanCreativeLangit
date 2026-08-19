@@ -101,3 +101,29 @@ Critical feature coverage includes authorization boundaries, automatic idea attr
 - Status values are backed enums stored as readable strings.
 - User deactivation is used instead of deletion so historical attribution remains intact.
 - Role pages currently provide an auditable permission matrix; the seeded role configuration is the baseline policy.
+
+## Production Deployment
+
+```bash
+composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction
+npm ci
+npm run build
+
+php artisan migrate --force
+php artisan db:seed --force
+php artisan kolabo:create-super-admin admin@example.com --name="Kolabo Admin"
+php artisan storage:link
+php artisan optimize
+php artisan queue:restart
+```
+
+## Production Update
+
+```bash
+php artisan down --refresh=15
+php artisan migrate --force
+php artisan db:seed --class=Database\\Seeders\\MasterDataSeeder --force
+php artisan optimize
+php artisan queue:restart
+php artisan up
+```
