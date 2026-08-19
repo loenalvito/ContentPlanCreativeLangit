@@ -1,12 +1,12 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="mb-5">
-        <h1 class="text-2xl font-bold">Calendar</h1>
-        <p class="text-xs text-slate-500">Jadwal konten dalam tampilan kalender</p>
+    <div class="mb-6">
+        <h1 class="page-title">Content Calendar</h1>
+        <p class="page-subtitle">Plan and review publishing dates across every channel.</p>
     </div>
 
-    <div class="panel p-4">
+    <div class="panel p-4 sm:p-6">
         <div id="calendar"></div>
     </div>
 @endsection

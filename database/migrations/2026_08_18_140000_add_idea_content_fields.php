@@ -1,0 +1,3 @@
+<?php
+use Illuminate\Database\Migrations\Migration;use Illuminate\Database\Schema\Blueprint;use Illuminate\Support\Facades\Schema;
+return new class extends Migration{public function up():void{Schema::create('idea_briefs',function(Blueprint $t){$t->id();$t->foreignId('idea_id')->unique()->constrained()->cascadeOnDelete();foreach(['hook','angle','key_message','cta','notes','script_copy'] as $c)$t->text($c)->nullable();$t->timestamps();});Schema::create('idea_assets',function(Blueprint $t){$t->id();$t->foreignId('idea_id')->constrained()->cascadeOnDelete();$t->string('name');$t->string('type');$t->text('url');$t->text('notes')->nullable();$t->timestamps();});}public function down():void{Schema::dropIfExists('idea_assets');Schema::dropIfExists('idea_briefs');}};

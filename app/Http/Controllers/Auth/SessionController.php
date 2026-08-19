@@ -1,3 +1,8 @@
 <?php
-namespace App\Http\Controllers\Auth; use App\Http\Controllers\Controller; use Illuminate\Http\Request; use Illuminate\Support\Facades\Auth;
-class SessionController extends Controller { public function create(){return view('auth.login');} public function store(Request $r){$credentials=$r->validate(['email'=>'required|email','password'=>'required']);if(!Auth::attempt($credentials,$r->boolean('remember')))return back()->withErrors(['email'=>'Email atau password tidak valid.'])->onlyInput('email');if(!$r->user()->is_active){Auth::logout();return back()->withErrors(['email'=>'Akun ini tidak aktif.']);}$r->session()->regenerate();$r->user()->update(['last_login_at'=>now()]);$home=$r->user()->can('dashboard.view')?route('dashboard'):($r->user()->can('ideas.view_own')||$r->user()->can('ideas.view_all')?route('ideas.index'):route('calendar'));return redirect()->intended($home);} public function destroy(Request $r){Auth::logout();$r->session()->invalidate();$r->session()->regenerateToken();return redirect()->route('login');}}
+namespace App\Http\Controllers\Auth;
+use App\Http\Controllers\Controller;use Illuminate\Http\Request;use Illuminate\Support\Facades\Auth;
+class SessionController extends Controller{
+ public function create(){return view('auth.login');}
+ public function store(Request $r){$credentials=$r->validate(['email'=>'required|email','password'=>'required']);if(!Auth::attempt($credentials,$r->boolean('remember')))return back()->withErrors(['email'=>'Email atau password tidak valid.'])->onlyInput('email');if(!$r->user()->is_active){Auth::logout();return back()->withErrors(['email'=>'Akun ini tidak aktif.']);}$r->session()->regenerate();$r->user()->update(['last_login_at'=>now()]);$home=$r->user()->can('dashboard.view')?route('dashboard'):($r->user()->can('sales_dashboard.view')?route('sales-dashboard'):($r->user()->can('ideas.view_own')||$r->user()->can('ideas.view_all')?route('ideas.index'):route('calendar')));return redirect()->intended($home);}
+ public function destroy(Request $r){Auth::logout();$r->session()->invalidate();$r->session()->regenerateToken();return redirect()->route('login');}
+}

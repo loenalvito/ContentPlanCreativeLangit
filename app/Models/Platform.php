@@ -1,2 +1,2 @@
 <?php
-namespace App\Models; use Illuminate\Database\Eloquent\Model; class Platform extends Model{protected $guarded=[];public function contents(){return $this->belongsToMany(Content::class);}}
+namespace App\Models; use Illuminate\Database\Eloquent\Model; class Platform extends Model{protected $guarded=[];protected function casts():array{return ['is_active'=>'boolean'];}public function contents(){return $this->belongsToMany(Content::class)->withPivot('account_id');}public function ideas(){return $this->belongsToMany(Idea::class);}public function accounts(){return $this->hasMany(Account::class);}}

@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Actions\UpdateContentStatus;
 use App\Enums\ContentStatus;
 use App\Models\{Asset,Content,ContentBrief,ContentComment,Format,Idea,Pillar,Series};
 use Illuminate\Http\Request;
@@ -11,9 +12,13 @@ use Spatie\Permission\Models\{Permission,Role};
 
 class RevisionOneController extends Controller
 {
-    public function updateContentStatus(Request $request, Content $content)
+    public function updateContentStatus(Request $request, Content $content, UpdateContentStatus $updateStatus)
     {
-        return app(KolaboController::class)->updateStatus($request, $content);
+        abort_unless($request->user()->can('content.change_status'), 403);
+        $data = $request->validate(['status' => ['required', Rule::enum(ContentStatus::class)]]);
+        $content = $updateStatus->execute($content, ContentStatus::from($data['status']), $request->user());
+
+        return response()->json(['ok' => true, 'message' => 'Status updated successfully', 'status' => $content->status->value, 'label' => $content->status->label()]);
     }
 
     public function brief(Request $request, Content $content)
@@ -36,8 +41,35 @@ class RevisionOneController extends Controller
     {
         abort_unless($request->user()->can('comments.create'),403);
         $data=$request->validate(['body'=>'required|string|max:5000']);
-        $content->comments()->create($data+['user_id'=>$request->user()->id]);
+        $content->comments()->create($data+['user_id'=>$request->user()->id,'status'=>'open']);
         return back()->with('success','Comment added.');
+    }
+
+    public function resolveComment(Request $request, Content $content, ContentComment $comment)
+    {
+        abort_unless($request->user()->can('comments.resolve'), 403);
+        abort_unless($comment->content_id === $content->id, 404);
+
+        if ($comment->status !== 'resolved') {
+            DB::transaction(function () use ($request, $content, $comment) {
+                $comment->update([
+                    'status' => 'resolved',
+                    'resolved_by' => $request->user()->id,
+                    'resolved_at' => now(),
+                ]);
+
+                activity()
+                    ->causedBy($request->user())
+                    ->performedOn($content)
+                    ->withProperties([
+                        'comment_id' => $comment->id,
+                        'comment_author_id' => $comment->user_id,
+                    ])
+                    ->log('resolved a comment');
+            });
+        }
+
+        return back()->with('success', 'Comment marked as resolved.');
     }
 
     public function revision(Request $request, Content $content)
@@ -47,8 +79,7 @@ class RevisionOneController extends Controller
         $data=$request->validate(['body'=>'nullable|string|max:5000']);
         DB::transaction(function()use($content,$request,$data){
             if(filled($data['body']??null)){$content->comments()->create(['user_id'=>$request->user()->id,'body'=>$data['body']]);$content->revisions()->create(['created_by'=>$request->user()->id,'note'=>$data['body']]);}
-            $content->update(['status'=>ContentStatus::InProduction,'updated_by'=>$request->user()->id]);
-            activity()->causedBy($request->user())->performedOn($content)->withProperties(['old'=>'Review','new'=>'In Production'])->log('requested revision');
+            app(UpdateContentStatus::class)->execute($content, ContentStatus::InProduction, $request->user());
         });
         return back()->with('success','Revision requested; content returned to In Production.');
     }
@@ -91,10 +122,10 @@ class RevisionOneController extends Controller
     }
     public function roleStore(Request $request)
     {
-        abort_unless($request->user()->can('roles.create'),403);$data=$request->validate(['name'=>'required|max:100|unique:roles,name','description'=>'nullable|max:1000','permissions'=>'array','permissions.*'=>'exists:permissions,name']);$role=Role::create(['name'=>$data['name'],'description'=>$data['description']??null]);$role->syncPermissions($data['permissions']??[]);return back()->with('success','Role created.');
+        abort_unless($request->user()->can('roles.create'),403);$data=$request->validate(['name'=>'required|max:100|unique:roles,name','description'=>'nullable|max:1000','is_active'=>'nullable|boolean','permissions'=>'array','permissions.*'=>'exists:permissions,name']);$role=Role::create(['name'=>$data['name'],'description'=>$data['description']??null,'is_active'=>$data['is_active']??true]);$role->syncPermissions($data['permissions']??[]);return back()->with('success','Role created.');
     }
     public function roleUpdate(Request $request,Role $role)
     {
-        abort_unless($request->user()->can('roles.edit'),403);abort_if($role->name==='Super Admin',422,'Super Admin role is protected.');$data=$request->validate(['name'=>['required','max:100',Rule::unique('roles')->ignore($role->id)],'description'=>'nullable|max:1000','permissions'=>'array','permissions.*'=>'exists:permissions,name']);$role->update(['name'=>$data['name'],'description'=>$data['description']??null]);$role->syncPermissions($data['permissions']??[]);return back()->with('success','Role updated.');
+        abort_unless($request->user()->can('roles.edit'),403);$data=$request->validate(['name'=>['required','max:100',Rule::unique('roles')->ignore($role->id)],'description'=>'nullable|max:1000','is_active'=>'required|boolean','permissions'=>'array','permissions.*'=>'exists:permissions,name']);$permissions=$data['permissions']??[];$active=(bool)$data['is_active'];if($role->name==='Super Admin'){$critical=['roles.view','roles.edit','users.view','users.edit'];abort_if(!$active||array_diff($critical,$permissions),422,'The last Super Admin must retain critical access and remain active.');$data['name']='Super Admin';}$role->update(['name'=>$data['name'],'description'=>$data['description']??null,'is_active'=>$active]);$role->syncPermissions($permissions);return back()->with('success','Role updated.');
     }
 }
