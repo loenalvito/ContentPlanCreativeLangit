@@ -20,6 +20,8 @@ Internal Laravel application for the complete Kolabo content lifecycle: **Ideas 
 - FullCalendar and SortableJS
 - `spatie/laravel-permission` and `spatie/laravel-activitylog`
 
+Composer resolves dependencies against PHP 8.2 through `config.platform.php`. The compatible package line is `spatie/laravel-permission ^6.0`; major 8 requires PHP 8.3. Deploy with `composer install` so the tested `composer.lock` is used—do not run `composer update` on the production server.
+
 ## Installation
 
 ```bash

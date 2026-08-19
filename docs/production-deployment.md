@@ -8,6 +8,8 @@
 - A web server pointing its document root to Laravel's `public/` directory.
 - A queue worker when `QUEUE_CONNECTION=database` is used.
 
+The committed Composer lock is resolved for PHP 8.2 (`config.platform.php = 8.2.0`) and pins the PHP-8.2-compatible Spatie Permission 6 line. Always deploy with `composer install`; running `composer update` on a server can select a newer PHP requirement and bypass the tested lockfile.
+
 ## First deployment
 
 1. Create the database and a non-root application account. Use [`deployment/mysql-setup.sql`](../deployment/mysql-setup.sql) as a reviewed template; change its password and host before executing it.
