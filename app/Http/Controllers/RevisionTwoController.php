@@ -33,6 +33,7 @@ class RevisionTwoController extends Controller
         abort_unless($request->user()->can('sales_dashboard.view'),403);
         $data=$dashboard->for($request->user());
         $data['members']=$data['creativeWorkloads'];
+        $data['title']='Request Dashboard';
         return view('sales-dashboard',$this->refs()+$data);
     }
 

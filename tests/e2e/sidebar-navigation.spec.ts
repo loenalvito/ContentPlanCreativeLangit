@@ -2,7 +2,7 @@ import { expect, Page, test } from '@playwright/test';
 import { failOnPageErrors, login } from './helpers';
 
 const adminLinks: Record<string, string> = {
-  Dashboard: '/dashboard', 'Sales Dashboard': '/sales-dashboard', Ideas: '/ideas',
+  Dashboard: '/dashboard', 'Request Dashboard': '/sales-dashboard', Ideas: '/ideas',
   'Content Plan': '/content', Production: '/production', Calendar: '/calendar',
   Published: '/published', Assets: '/assets', 'My Tasks': '/my-tasks', Team: '/team',
   Users: '/admin/users', 'Roles & Permissions': '/admin/roles',
@@ -43,7 +43,7 @@ test('Super Admin sidebar routes, icons, active state, and JavaScript remain hea
 
 test('Sales sidebar follows seeded permissions and restricted routes stay forbidden', async ({ page }) => {
   await login(page, 'sales@kolabo.id');
-  await expectNavigation(page, ['Sales Dashboard', 'Ideas', 'Calendar', 'My Tasks'],
+  await expectNavigation(page, ['Request Dashboard', 'Ideas', 'Calendar', 'My Tasks'],
     ['Dashboard', 'Content Plan', 'Production', 'Published', 'Assets', 'Team', 'Users',
       'Roles & Permissions', 'Accounts', 'Pillars & Series']);
   for (const path of ['/dashboard', '/content', '/production', '/published', '/assets', '/team',
@@ -55,7 +55,7 @@ test('Creative Member sidebar follows seeded permissions without Administration'
   await login(page, 'fadly@kolabo.id');
   await expectNavigation(page,
     ['Dashboard', 'Ideas', 'Content Plan', 'Production', 'Calendar', 'Published', 'Assets', 'My Tasks'],
-    ['Sales Dashboard', 'Team', 'Users', 'Roles & Permissions', 'Accounts', 'Pillars & Series']);
+    ['Request Dashboard', 'Team', 'Users', 'Roles & Permissions', 'Accounts', 'Pillars & Series']);
   for (const path of ['/team', '/admin/users', '/admin/roles', '/admin/accounts', '/admin/masters'])
     expect((await page.request.get(path)).status(), path).toBe(403);
 });

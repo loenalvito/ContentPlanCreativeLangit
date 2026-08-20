@@ -23,7 +23,7 @@ class MasterDataSeeder extends Seeder
         'ideas.delete', 'ideas.select', 'ideas.change_status', 'ideas.move_to_content',
         'ideas.convert', 'ideas.bulk_move_to_content', 'ideas.bulk_import',
         'calendar.view', 'calendar.edit', 'calendar.reschedule',
-        'production.view', 'production.change_status', 'production.rollback_published',
+        'production.view', 'production.view_all_tasks', 'production.change_status', 'production.rollback_published',
         'published.view', 'assets.view', 'assets.create', 'assets.delete',
         'comments.create', 'comments.edit_own', 'comments.delete_own', 'comments.manage', 'comments.resolve',
         'team.view', 'users.view', 'users.create', 'users.edit', 'users.deactivate',
@@ -132,6 +132,9 @@ class MasterDataSeeder extends Seeder
             );
             if ($role->wasRecentlyCreated || $name === 'Super Admin') {
                 $role->syncPermissions($permissions);
+            }
+            if ($name === 'Creative Lead') {
+                $role->givePermissionTo('production.view_all_tasks');
             }
         }
 

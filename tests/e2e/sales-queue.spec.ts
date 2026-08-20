@@ -82,7 +82,7 @@ test('Sales queue presents backend order, lifecycle, ownership, and read-only st
   await expect(queue.nth(2).getByTestId('queue-position')).toHaveText('#3');
   await expect(queue.nth(0)).toContainText('URGENT REQUEST');
   await expect(queue.nth(0)).toContainText('Dina Lead');
-  await expect(queue.nth(0)).toContainText('Tomorrow · 10:00');
+  await expect(queue.nth(0)).toContainText('Today · 10:00');
   await expect(queue.nth(2).getByTestId('queue-status')).toHaveText('Queued');
   await expect(page.getByTestId('workload-card').filter({ hasText: 'Dina Lead' })).toContainText('1');
   await expect(page.getByTestId('content-queue').locator('select, [draggable="true"], button')).toHaveCount(0);

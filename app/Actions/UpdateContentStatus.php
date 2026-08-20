@@ -8,7 +8,7 @@ use App\Models\User;
 
 class UpdateContentStatus
 {
-    public function execute(Content $content, ContentStatus $target, User $user): Content
+    public function execute(Content $content, ContentStatus $target, User $user, ?string $activityMessage = null): Content
     {
         $old = $content->status;
 
@@ -18,6 +18,7 @@ class UpdateContentStatus
 
         $content->update([
             'status' => $target,
+            'published_at' => $target === ContentStatus::Published ? ($content->published_at ?? now()) : $content->published_at,
             'updated_by' => $user->id,
         ]);
 
@@ -30,7 +31,7 @@ class UpdateContentStatus
                 'old_status' => $old->value,
                 'new_status' => $target->value,
             ])
-            ->log($user->name.' changed status from '.$old->label().' to '.$target->label().'.');
+            ->log($activityMessage ?? $user->name.' changed status from '.$old->label().' to '.$target->label().'.');
 
         return $content->refresh();
     }

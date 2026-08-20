@@ -23,7 +23,7 @@ class RevisionOneController extends Controller
 
     public function brief(Request $request, Content $content)
     {
-        abort_unless($request->user()->can('content.edit'), 403);
+        abort_unless($request->user()->can('update', $content), 403);
         $data = $request->validate(['hook'=>'nullable|string','angle'=>'nullable|string','key_message'=>'nullable|string','cta'=>'nullable|string','notes'=>'nullable|string','main_copy'=>'nullable|string','reels_script'=>'nullable|string','carousel_copy'=>'nullable|string','caption'=>'nullable|string','threads_copy'=>'nullable|string']);
         ContentBrief::updateOrCreate(['content_id'=>$content->id], $data);
         return back()->with('success', 'Content detail saved successfully.');
@@ -31,7 +31,7 @@ class RevisionOneController extends Controller
 
     public function asset(Request $request, Content $content)
     {
-        abort_unless($request->user()->can('assets.create'), 403);
+        abort_unless($request->user()->can('update', $content), 403);
         $data=$request->validate(['title'=>'required|max:255','asset_type'=>'required|max:100','url'=>'required|url','notes'=>'nullable|string']);
         Asset::create($data+['content_id'=>$content->id,'category'=>'Content Reference','added_by'=>$request->user()->id]);
         return back()->with('success','Asset reference added.');

@@ -25,7 +25,7 @@
 
 <div x-data="{open:false,urgent:false,pillar:'',series:@js($seriesData),list(){return this.series.filter(series=>String(series.pillar_id)===String(this.pillar))}}">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div><h1 class="page-title">Sales Dashboard</h1><p class="page-subtitle">Monitor Creative workload and track your content requests.</p></div>
+        <div><h1 class="page-title">Request Dashboard</h1><p class="page-subtitle">Monitor Creative workload and track your content requests.</p></div>
         @can('content_request.create')<button data-testid="request-content" @click="open=true" class="btn btn-blue">＋ Request Content</button>@endcan
     </div>
 
